@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSLR Search Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label, input, button {
+            display: block;
+            margin: 10px 0;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search for Address</h1>
+    <form id="searchForm">
+        <label for="address">Enter Address:</label>
+        <input type="text" id="address" name="address" placeholder="123 Main St" required>
+        <button type="submit">Search</button>
+    </form>
+
+    <div id="result" class="result"></div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const address = document.getElementById('address').value;
+            const queryUrl = `https://services7.arcgis.com/h9goassILvMJIAV1/arcgis/rest/services/LSLR_Inventory/FeatureServer/0/query?where=address='${encodeURIComponent(address)}'&outFields=utilitymaterial,customermaterial&returnGeometry=false&f=json`;
+
+            fetch(queryUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.features && data.features.length > 0) {
+                        const result = data.features[0].attributes;
+                        document.getElementById('result').innerHTML = `
+                            <p><strong>Utility Material:</strong> ${result.utilitymaterial}</p>
+                            <p><strong>Customer Material:</strong> ${result.customermaterial}</p>
+                        `;
+                    } else {
+                        document.getElementById('result').innerHTML = '<p>No results found for this address.</p>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('result').innerHTML = '<p>Error fetching data. Please try again.</p>';
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+</html>
